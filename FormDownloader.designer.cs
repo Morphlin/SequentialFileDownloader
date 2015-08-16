@@ -43,16 +43,13 @@
             this.ComboBoxDirectory = new System.Windows.Forms.ComboBox();
             this.FolderBrowserDialogDownloadLocation = new System.Windows.Forms.FolderBrowserDialog();
             this.LabelStatus = new System.Windows.Forms.Label();
-            this.HelpProviderDownload = new System.Windows.Forms.HelpProvider();
             this.SuspendLayout();
             // 
             // ButtonStart
             // 
             this.ButtonStart.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.HelpProviderDownload.SetHelpString(this.ButtonStart, "Start button. Fires up the sequential download.");
             this.ButtonStart.Location = new System.Drawing.Point(94, 213);
             this.ButtonStart.Name = "ButtonStart";
-            this.HelpProviderDownload.SetShowHelp(this.ButtonStart, true);
             this.ButtonStart.Size = new System.Drawing.Size(75, 23);
             this.ButtonStart.TabIndex = 0;
             this.ButtonStart.Text = "St&art";
@@ -73,10 +70,8 @@
             // 
             this.ButtonStop.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.ButtonStop.Enabled = false;
-            this.HelpProviderDownload.SetHelpString(this.ButtonStop, "Stop, interrupt and close button.");
             this.ButtonStop.Location = new System.Drawing.Point(261, 212);
             this.ButtonStop.Name = "ButtonStop";
-            this.HelpProviderDownload.SetShowHelp(this.ButtonStop, true);
             this.ButtonStop.Size = new System.Drawing.Size(75, 23);
             this.ButtonStop.TabIndex = 2;
             this.ButtonStop.Text = "St&op";
@@ -86,10 +81,8 @@
             // TextBoxStartIndex
             // 
             this.TextBoxStartIndex.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.HelpProviderDownload.SetHelpString(this.TextBoxStartIndex, "Start index. Inclusive.");
             this.TextBoxStartIndex.Location = new System.Drawing.Point(33, 214);
             this.TextBoxStartIndex.Name = "TextBoxStartIndex";
-            this.HelpProviderDownload.SetShowHelp(this.TextBoxStartIndex, true);
             this.TextBoxStartIndex.Size = new System.Drawing.Size(45, 20);
             this.TextBoxStartIndex.TabIndex = 5;
             this.TextBoxStartIndex.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
@@ -97,10 +90,8 @@
             // TextBoxEndIndex
             // 
             this.TextBoxEndIndex.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.HelpProviderDownload.SetHelpString(this.TextBoxEndIndex, "End index. Inclusive.");
             this.TextBoxEndIndex.Location = new System.Drawing.Point(352, 213);
             this.TextBoxEndIndex.Name = "TextBoxEndIndex";
-            this.HelpProviderDownload.SetShowHelp(this.TextBoxEndIndex, true);
             this.TextBoxEndIndex.Size = new System.Drawing.Size(45, 20);
             this.TextBoxEndIndex.TabIndex = 6;
             this.TextBoxEndIndex.Text = "469";
@@ -109,10 +100,8 @@
             // TextBoxFilename
             // 
             this.TextBoxFilename.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.HelpProviderDownload.SetHelpString(this.TextBoxFilename, "Download filename. Sequence number to be replaced by {0}.");
             this.TextBoxFilename.Location = new System.Drawing.Point(246, 69);
             this.TextBoxFilename.Name = "TextBoxFilename";
-            this.HelpProviderDownload.SetShowHelp(this.TextBoxFilename, true);
             this.TextBoxFilename.Size = new System.Drawing.Size(91, 20);
             this.TextBoxFilename.TabIndex = 7;
             this.TextBoxFilename.Text = "sn0{0}.mp3";
@@ -132,10 +121,8 @@
             // 
             this.LabelProgress.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.HelpProviderDownload.SetHelpString(this.LabelProgress, "Downloaded files / Total files to download.");
             this.LabelProgress.Location = new System.Drawing.Point(176, 218);
             this.LabelProgress.Name = "LabelProgress";
-            this.HelpProviderDownload.SetShowHelp(this.LabelProgress, true);
             this.LabelProgress.Size = new System.Drawing.Size(79, 13);
             this.LabelProgress.TabIndex = 9;
             this.LabelProgress.Text = "0 / 0";
@@ -165,13 +152,11 @@
             this.ComboBoxUrl.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.ComboBoxUrl.FormattingEnabled = true;
-            this.HelpProviderDownload.SetHelpString(this.ComboBoxUrl, "Download URL. Sequence number to be replaced by {0}.");
             this.ComboBoxUrl.Items.AddRange(new object[] {
             "http://twit.cachefly.net/audio/sn/sn0{0}/sn0{0}.mp3",
             "http://twit.cachefly.net/video/sn/sn0{0}/sn0{0}_h264b_864x480_500.mp4"});
             this.ComboBoxUrl.Location = new System.Drawing.Point(33, 28);
             this.ComboBoxUrl.Name = "ComboBoxUrl";
-            this.HelpProviderDownload.SetShowHelp(this.ComboBoxUrl, true);
             this.ComboBoxUrl.Size = new System.Drawing.Size(364, 21);
             this.ComboBoxUrl.TabIndex = 12;
             // 
@@ -180,12 +165,10 @@
             this.ComboBoxDirectory.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.ComboBoxDirectory.FormattingEnabled = true;
-            this.HelpProviderDownload.SetHelpString(this.ComboBoxDirectory, "Download location. Use the browse button for easy path selection.");
             this.ComboBoxDirectory.Items.AddRange(new object[] {
             "C:\\Users\\Alex\\Downloads\\sn\\"});
             this.ComboBoxDirectory.Location = new System.Drawing.Point(33, 68);
             this.ComboBoxDirectory.Name = "ComboBoxDirectory";
-            this.HelpProviderDownload.SetShowHelp(this.ComboBoxDirectory, true);
             this.ComboBoxDirectory.Size = new System.Drawing.Size(207, 21);
             this.ComboBoxDirectory.TabIndex = 13;
             // 
@@ -220,12 +203,9 @@
             this.Controls.Add(this.ButtonStart);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
             this.HelpButton = true;
-            this.HelpProviderDownload.SetHelpString(this, "");
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MaximizeBox = false;
-            this.MinimizeBox = false;
             this.Name = "FormDownloader";
-            this.HelpProviderDownload.SetShowHelp(this, true);
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Sequential File Downloader";
             this.Load += new System.EventHandler(this.FormAsync_Load);
@@ -250,7 +230,6 @@
         private System.Windows.Forms.ComboBox ComboBoxDirectory;
         private System.Windows.Forms.FolderBrowserDialog FolderBrowserDialogDownloadLocation;
         private System.Windows.Forms.Label LabelStatus;
-        private System.Windows.Forms.HelpProvider HelpProviderDownload;
     }
 }
 

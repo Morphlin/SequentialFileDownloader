@@ -40,18 +40,22 @@ namespace SequentialFileDownloader
         /// Download duration tracking.
         /// </summary>
         private Stopwatch Timer = new Stopwatch();
+
         /// <summary>
         /// URL list.
         /// </summary>
-        private Queue<KeyValuePair<string, string>> _downloadUrls = new Queue<KeyValuePair<string, string>>();
+        private Queue<KeyValuePair<string, string>> _downloadUrls;
+
         /// <summary>
         /// Cancel var to keep track of the cancel request.
         /// </summary>
         private bool Cancel;
+
         /// <summary>
         /// Count of the current downloads sequence.
         /// </summary>
         private int DownloadCount = 0;
+
         /// <summary>
         /// Start button.
         /// </summary>
@@ -71,12 +75,14 @@ namespace SequentialFileDownloader
                 TextBoxFilename.Enabled = false;
                 TextBoxStartIndex.Enabled = false;
                 TextBoxEndIndex.Enabled = false;
-                LabelProgress.Text = "0";
+                LabelProgress.Text = "0 / 0";
                 ProgressBarSequence.Value = 0;
+                TaskbarProgress.SetState(Handle, TaskbarProgress.TaskbarStates.NoProgress);
                 LabelStatus.Text = "Downloading...";
 
                 int i;
-                for (i = Convert.ToInt32(TextBoxStartIndex.Text); i < Convert.ToInt32(TextBoxEndIndex.Text); i++)
+                _downloadUrls = new Queue<KeyValuePair<string, string>>();
+                for (i = Convert.ToInt32(TextBoxStartIndex.Text); i <= Convert.ToInt32(TextBoxEndIndex.Text); i++)
                 {
                     _downloadUrls.Enqueue(new KeyValuePair<string, string>(String.Format(ComboBoxUrl.Text, i.ToString().PadLeft(3, '0')), String.Format(ComboBoxDirectory.Text + TextBoxFilename.Text, i.ToString().PadLeft(3, '0'))));
                 }
@@ -110,7 +116,7 @@ namespace SequentialFileDownloader
             }
             Cancel = true;
             ButtonStop.Text = "&Cancel";
-            LabelStatus.Text = "Download stopped. Finishing last download...";
+            LabelStatus.Text = "Sequence stopped. Finishing last download...";
         }
 
         /// <summary>
@@ -131,12 +137,14 @@ namespace SequentialFileDownloader
             Timer.Stop();
             if (Cancel)
             {
-                LabelStatus.Text = "Download cancelled at " + DownloadCount + ". " + Timer.Elapsed;
+                LabelStatus.Text = "Sequence cancelled at " + DownloadCount + ". " + Timer.Elapsed;
+                TaskbarProgress.SetState(Handle, TaskbarProgress.TaskbarStates.Error);
                 Cancel = false;
             }
             else
             {
-                LabelStatus.Text = "Download complete! " + DownloadCount + " downloaded." + " " + Timer.Elapsed;
+                LabelStatus.Text = "Sequence complete! " + DownloadCount + " downloaded." + " " + Timer.Elapsed;
+                TaskbarProgress.SetState(Handle, TaskbarProgress.TaskbarStates.Paused);
             }
             ButtonStop.Text = "Cl&ose";
             ButtonStart.Enabled = true;
@@ -163,6 +171,7 @@ namespace SequentialFileDownloader
                 // handle error scenario
                 MessageBox.Show("Download error: " + e.Error.Message);
                 LabelStatus.Text = "Download error at " + DownloadCount + ". " + Timer.Elapsed;
+                TaskbarProgress.SetState(Handle, TaskbarProgress.TaskbarStates.Error);
                 return;
             }
             if (e.Cancelled)
@@ -170,10 +179,14 @@ namespace SequentialFileDownloader
                 // handle cancelled scenario
                 MessageBox.Show("Download cancelled by network!");
                 LabelStatus.Text = "Download cancelled by network at " + DownloadCount + ". " + Timer.Elapsed;
+                TaskbarProgress.SetState(Handle, TaskbarProgress.TaskbarStates.Error);
                 return;
             }
             LabelProgress.Text = DownloadCount + " / " +(Convert.ToInt32(TextBoxEndIndex.Text) - Convert.ToInt32(TextBoxStartIndex.Text));
-            ProgressBarSequence.Value = Convert.ToInt32((DownloadCount / (Convert.ToDecimal(TextBoxEndIndex.Text) - Convert.ToDecimal(TextBoxStartIndex.Text))) * 100);
+            var Progress = Convert.ToInt32((DownloadCount/(Convert.ToDecimal(TextBoxEndIndex.Text) - (Convert.ToDecimal(TextBoxStartIndex.Text)-1)))*100);
+            ProgressBarSequence.Value = Progress;
+            TaskbarProgress.SetValue(Handle, Progress, 100);
+            TaskbarProgress.SetState(Handle, TaskbarProgress.TaskbarStates.Normal);
             DownloadFile();
         }
 
