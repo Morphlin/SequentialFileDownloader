@@ -1,6 +1,6 @@
 ﻿using System;
+using System.IO;
 using System.Net;
-using System.Linq;
 using System.Diagnostics;
 using System.ComponentModel;
 using System.Collections.Generic;
@@ -25,6 +25,7 @@ namespace SequentialFileDownloader
         /// WebClient Instance.
         /// </summary>
         private WebClient client = new WebClient();
+
         /// <summary>
         /// WebClient events assignment during form load.
         /// </summary>
@@ -42,19 +43,49 @@ namespace SequentialFileDownloader
         private Stopwatch Timer = new Stopwatch();
 
         /// <summary>
-        /// URL list.
-        /// </summary>
-        private Queue<KeyValuePair<string, string>> _downloadUrls;
-
-        /// <summary>
         /// Cancel var to keep track of the cancel request.
         /// </summary>
         private bool Cancel;
 
         /// <summary>
+        /// Index of the first downloads sequence.
+        /// </summary>
+        private int DownloadIndexStart = 0;
+
+        /// <summary>
+        /// Index of the last downloads sequence.
+        /// </summary>
+        private int DownloadIndexEnd = 0;
+
+        /// <summary>
+        /// Index of the current downloads sequence.
+        /// </summary>
+        private int DownloadIndex = 0;
+
+        /// <summary>
+        /// End count of the current downloads sequence.
+        /// </summary>
+        private int DownloadCountEnd = 0;
+
+        /// <summary>
         /// Count of the current downloads sequence.
         /// </summary>
         private int DownloadCount = 0;
+
+        /// <summary>
+        /// Activity log of the current sequence.
+        /// </summary>
+        private List<string> DownloadLog;
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void ComboBoxUrl_TextChanged(object sender, EventArgs e)
+        {
+            TextBoxFilename.Text = ComboBoxUrl.Text.Split('/')[ComboBoxUrl.Text.Split('/').Length - 1];
+        }
 
         /// <summary>
         /// Start button.
@@ -65,7 +96,6 @@ namespace SequentialFileDownloader
         {
             if (TextBoxStartIndex.Text.Length > 0)
             {
-                Timer.Start();
                 ButtonStop.Text = "St&op";
                 ButtonStart.Enabled = false;
                 ButtonStop.Enabled = true;
@@ -75,19 +105,22 @@ namespace SequentialFileDownloader
                 TextBoxFilename.Enabled = false;
                 TextBoxStartIndex.Enabled = false;
                 TextBoxEndIndex.Enabled = false;
-                LabelProgress.Text = "0 / 0";
                 ProgressBarSequence.Value = 0;
                 TaskbarProgress.SetState(Handle, TaskbarProgress.TaskbarStates.NoProgress);
                 LabelStatus.Text = "Downloading...";
 
-                int i;
-                _downloadUrls = new Queue<KeyValuePair<string, string>>();
-                for (i = Convert.ToInt32(TextBoxStartIndex.Text); i <= Convert.ToInt32(TextBoxEndIndex.Text); i++)
-                {
-                    _downloadUrls.Enqueue(new KeyValuePair<string, string>(String.Format(ComboBoxUrl.Text, i.ToString().PadLeft(3, '0')), String.Format(ComboBoxDirectory.Text + TextBoxFilename.Text, i.ToString().PadLeft(3, '0'))));
-                }
-
                 // Starts the download
+                DownloadLog = new List<string>();
+                DownloadLog.Add("Sequence initiated: " + DateTime.Now);
+                Timer.Reset();
+                Timer.Start();
+                Cancel = false;
+                DownloadIndexStart = Convert.ToInt32(TextBoxStartIndex.Text);
+                DownloadIndexEnd = Convert.ToInt32(TextBoxEndIndex.Text);
+                DownloadIndex = DownloadIndexStart;
+                DownloadCount = 0;
+                DownloadCountEnd = (DownloadIndexEnd - DownloadIndexStart) + 1;
+                LabelProgress.Text = "0 / " + DownloadCountEnd;
                 DownloadFile();
             }
             else
@@ -122,24 +155,24 @@ namespace SequentialFileDownloader
         /// <summary>
         /// Download method that is called sequentially after each download is finished.
         /// </summary>
-        private void DownloadFile()
+        private void DownloadFile(bool Abort = false)
         {
-            if (_downloadUrls.Any() && Cancel == false)
+            if ((DownloadIndex <= DownloadIndexEnd) && Cancel == false && Abort == false)
             {
-                DownloadCount++;
-                var url = _downloadUrls.Dequeue();
-                client.DownloadFileAsync(new Uri(url.Key), url.Value);
-                LabelDownloadingUrl.Text = url.Key;
+                var DownloadUri = new Uri(String.Format(ComboBoxUrl.Text, DownloadIndex.ToString().PadLeft(3, '0')));
+                var DownloadPath = String.Format(ComboBoxDirectory.Text + "\\" + TextBoxFilename.Text, DownloadIndex.ToString().PadLeft(3, '0'));
+                client.DownloadFileAsync(DownloadUri, DownloadPath, DownloadPath);
+                LabelDownloadingUrl.Text = DownloadUri.OriginalString;
                 return;
             }
 
             // End of the download
             Timer.Stop();
-            if (Cancel)
+            DownloadLog.Add("Sequence terminated: " + Timer.Elapsed + " at " + DateTime.Now);
+            if (Cancel || Abort)
             {
-                LabelStatus.Text = "Sequence cancelled at " + DownloadCount + ". " + Timer.Elapsed;
+                LabelStatus.Text = "Sequence " + (Abort ? "aborted" : "cancelled") + " at " + DownloadIndex + ". " + Timer.Elapsed;
                 TaskbarProgress.SetState(Handle, TaskbarProgress.TaskbarStates.Error);
-                Cancel = false;
             }
             else
             {
@@ -155,8 +188,6 @@ namespace SequentialFileDownloader
             TextBoxFilename.Enabled = true;
             TextBoxStartIndex.Enabled = true;
             TextBoxEndIndex.Enabled = true;
-            Timer.Reset();
-            DownloadCount = 0;
         }
 
         /// <summary>
@@ -166,26 +197,55 @@ namespace SequentialFileDownloader
         /// <param name="e"></param>
         private void client_DownloadFileCompleted(object sender, AsyncCompletedEventArgs e)
         {
+            // handle error scenario
             if (e.Error != null)
             {
-                // handle error scenario
-                MessageBox.Show("Download error: " + e.Error.Message);
-                LabelStatus.Text = "Download error at " + DownloadCount + ". " + Timer.Elapsed;
-                TaskbarProgress.SetState(Handle, TaskbarProgress.TaskbarStates.Error);
-                return;
+                var DownloadErrorMessage = "Download error at " + DownloadIndex + ". " + Timer.Elapsed + "\n\r";
+                DownloadLog.Add(DownloadErrorMessage + "Message:" + e.Error.Message);
+
+                //deletes partially downloaded file
+                var PartialDownload = new FileInfo((string)e.UserState);
+                if (PartialDownload.Exists)
+                {
+                    PartialDownload.Delete();
+                }
+                else
+                {
+                    DownloadLog.Add("Error attempting to delete partially downloaded file: " + PartialDownload.FullName);
+                }
+                
+                // handle cancel scenario
+                if (!e.Cancelled)
+                {
+                    // error display and question
+                    LabelStatus.Text = "Download error at " + DownloadIndex + ". " + Timer.Elapsed;
+                    TaskbarProgress.SetState(Handle, TaskbarProgress.TaskbarStates.Error);
+                    var MsgRes = MessageBox.Show(DownloadErrorMessage, "Sequential File Downloader", MessageBoxButtons.AbortRetryIgnore, MessageBoxIcon.Error);
+                    switch (MsgRes)
+                    {
+                        case DialogResult.Abort:
+                            DownloadLog.Add(DownloadErrorMessage + "Command: User abort.");
+                            DownloadFile(true);
+                            return;
+                        case DialogResult.Retry:
+                            DownloadLog.Add(DownloadErrorMessage + "Command: User retry.");
+                            DownloadFile();
+                            return;
+                    }
+                    DownloadLog.Add(DownloadErrorMessage + "Command: User ignore.");
+                }
+                else
+                {
+                    DownloadFile();
+                    return;
+                }
             }
-            if (e.Cancelled)
-            {
-                // handle cancelled scenario
-                MessageBox.Show("Download cancelled by network!");
-                LabelStatus.Text = "Download cancelled by network at " + DownloadCount + ". " + Timer.Elapsed;
-                TaskbarProgress.SetState(Handle, TaskbarProgress.TaskbarStates.Error);
-                return;
-            }
-            LabelProgress.Text = DownloadCount + " / " +(Convert.ToInt32(TextBoxEndIndex.Text) - Convert.ToInt32(TextBoxStartIndex.Text));
-            var Progress = Convert.ToInt32((DownloadCount/(Convert.ToDecimal(TextBoxEndIndex.Text) - (Convert.ToDecimal(TextBoxStartIndex.Text)-1)))*100);
-            ProgressBarSequence.Value = Progress;
-            TaskbarProgress.SetValue(Handle, Progress, 100);
+            if (e.Error == null) DownloadCount++;
+            DownloadIndex++;
+            LabelProgress.Text = DownloadCount + " / " + DownloadCountEnd;
+            var ProgressPercentage = Convert.ToInt32((DownloadCount / Convert.ToDecimal(DownloadCountEnd)) * 100);
+            ProgressBarSequence.Value = ProgressPercentage;
+            TaskbarProgress.SetValue(Handle, ProgressPercentage, 100);
             TaskbarProgress.SetState(Handle, TaskbarProgress.TaskbarStates.Normal);
             DownloadFile();
         }
@@ -213,7 +273,7 @@ namespace SequentialFileDownloader
             var folder = FolderBrowserDialogDownloadLocation.ShowDialog();
             if (folder == DialogResult.OK)
             {
-                ComboBoxDirectory.Text = FolderBrowserDialogDownloadLocation.SelectedPath + "\\";
+                ComboBoxDirectory.Text = FolderBrowserDialogDownloadLocation.SelectedPath;
             }
         }
     }

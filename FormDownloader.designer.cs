@@ -104,7 +104,6 @@
             this.TextBoxFilename.Name = "TextBoxFilename";
             this.TextBoxFilename.Size = new System.Drawing.Size(91, 20);
             this.TextBoxFilename.TabIndex = 7;
-            this.TextBoxFilename.Text = "sn0{0}.mp3";
             // 
             // ButtonBrowse
             // 
@@ -154,19 +153,20 @@
             this.ComboBoxUrl.FormattingEnabled = true;
             this.ComboBoxUrl.Items.AddRange(new object[] {
             "http://twit.cachefly.net/audio/sn/sn0{0}/sn0{0}.mp3",
-            "http://twit.cachefly.net/video/sn/sn0{0}/sn0{0}_h264b_864x480_500.mp4"});
+            "http://twit.cachefly.net/video/sn/sn0{0}/sn0{0}_h264m_1280x720_1872.mp4",
+            "http://twit.cachefly.net/video/sn/sn0{0}/sn0{0}_h264b_864x480_500.mp4",
+            "http://twit.cachefly.net/video/sn/sn0{0}/sn0{0}_h264b_640x368_256.mp4"});
             this.ComboBoxUrl.Location = new System.Drawing.Point(33, 28);
             this.ComboBoxUrl.Name = "ComboBoxUrl";
             this.ComboBoxUrl.Size = new System.Drawing.Size(364, 21);
             this.ComboBoxUrl.TabIndex = 12;
+            this.ComboBoxUrl.TextChanged += new System.EventHandler(this.ComboBoxUrl_TextChanged);
             // 
             // ComboBoxDirectory
             // 
             this.ComboBoxDirectory.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.ComboBoxDirectory.FormattingEnabled = true;
-            this.ComboBoxDirectory.Items.AddRange(new object[] {
-            "C:\\Users\\Alex\\Downloads\\sn\\"});
             this.ComboBoxDirectory.Location = new System.Drawing.Point(33, 68);
             this.ComboBoxDirectory.Name = "ComboBoxDirectory";
             this.ComboBoxDirectory.Size = new System.Drawing.Size(207, 21);
